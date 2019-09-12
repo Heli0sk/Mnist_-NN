@@ -12,8 +12,8 @@ trX, trY, teX, teY = readdata()
 batch_size = 150
 test_size=2500
 
-g = tf.Graph()
-with g.as_default():
+g_CNN = tf.Graph()
+with g_CNN.as_default():
     # Y_all = tf.constant(loady[:], dtype=tf.float32)
     def init_weights(shape):
         return tf.Variable(tf.random_normal(shape,stddev=0.01))
@@ -64,19 +64,24 @@ with g.as_default():
     train_op = tf.train.GradientDescentOptimizer(0.5).minimize(cost)
     predict_op = tf.argmax(py_x,1)
 
-with tf.Session(graph = g) as sess:
-    sess.run(tf.global_variables_initializer())
-    for i in range(200):
-# 训练 先打包 再一次次训练（填数据，自动校正 W 参数）
-        training_batch = zip(range(0,len(teX),batch_size),
-                                   range(batch_size,len(teX)+1,batch_size))
-        for start ,end in training_batch:
-            sess.run(train_op,feed_dict={
-                X:trX[start:end],Y:trY[start:end],p_keep_hidden : 0.7,p_keep_conv : 0.9})
-#验证
-        pre_y = onehot(sess.run(predict_op, feed_dict={X: teX[:],p_keep_hidden:0.9,p_keep_conv :1}))
-        Verify(teY,pre_y,i,test_size)
-#测试
-#略
-#模型保存
-    tf.model_variables()
+def CNN():
+    with tf.Session(graph = g_CNN) as sess:
+        sess.run(tf.global_variables_initializer())
+        for i in range(200):
+    # 训练 先打包 再一次次训练（填数据，自动校正 W 参数）
+            training_batch = zip(range(0,len(teX),batch_size),
+                                       range(batch_size,len(teX)+1,batch_size))
+            for start ,end in training_batch:
+                sess.run(train_op,feed_dict={
+                    X:trX[start:end],Y:trY[start:end],p_keep_hidden : 0.7,p_keep_conv : 0.9})
+    #验证
+            pre_y = onehot(sess.run(predict_op, feed_dict={X: teX[:],p_keep_hidden:0.9,p_keep_conv :1}))
+            Verify(teY,pre_y,i,test_size)
+    #测试
+    #略
+    
+    #模型保存
+        tf.model_variables()
+
+if __name__ == '__main__':
+    CNN()
